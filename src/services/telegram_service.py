@@ -76,7 +76,7 @@ class TelegramService:
     def get_messages(self):
         response = requests.get(self.url + "/getUpdates", {"offset": self.offset}, timeout=5)
         content = json.loads(response.content)
-        return content["result"]
+        return content.get("result", [])
 
     def handle_messages(self):
         for message in self.get_messages():
