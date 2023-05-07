@@ -1,5 +1,5 @@
 import json
-import time
+import threading
 
 import requests
 from loguru import logger as log
@@ -13,7 +13,7 @@ class TelegramService:
         self.language = language
         self.offset = 0
         self.running = True
-        self.refresh_rate = 1
+        self.messages = []
 
         self.welcome = (
             "Hello and welcome to our Telegram bot.\n\n"
@@ -40,7 +40,6 @@ class TelegramService:
         log.info("Bot started to run")
         while self.running:
             self.handle_messages()
-            time.sleep(self.refresh_rate)
 
     def __validate_admin(self, message):
         username = message["chat"]["username"]
@@ -81,12 +80,22 @@ class TelegramService:
 
     def handle_messages(self):
         for message in self.get_messages():
+            self.messages.append(message)
+
+        if len(self.messages) > 0:
+            task = threading.Thread(target=self.process_messages)
+            task.start()
+            task.join()
+
+    def process_messages(self):
+        for message in self.messages:
             log.debug(message)
             self.offset = message["update_id"]
 
             if not message["message"]["from"]["is_bot"] and message["message"]["entities"][0]["type"] == "bot_command":
                 self.command_options(message["message"])
 
+        self.messages = []
         self.offset += 1
 
     def command_options(self, message):
