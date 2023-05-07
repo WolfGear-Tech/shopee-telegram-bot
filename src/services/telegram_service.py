@@ -63,9 +63,8 @@ class TelegramService:
         requests.post(self.url + "/setMyCommands", data, timeout=5)
 
     def send_message(self, message: dict, text: str):
-        user_name = message["chat"]["first_name"]
         chat_id = message["chat"]["id"]
-        data = {"chat_id": chat_id, "text": text.format(user_name)}
+        data = {"chat_id": chat_id, "text": text}
         requests.post(self.url + "/sendMessage", data, timeout=5)
 
     def get_last_offset(self):
@@ -93,7 +92,8 @@ class TelegramService:
     def command_options(self, message):
         option = message["text"].split()[0]
         if option == "/start":
-            self.send_message(message, self.welcome)
+            user_name = message["chat"]["first_name"]
+            self.send_message(message, self.welcome.format(user_name))
         elif option == "/exit" and self.__validate_admin(message):
             self.running = False
         elif option == "/help":
