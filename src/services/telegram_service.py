@@ -2,25 +2,18 @@ import json
 import time
 
 import requests
-from googletrans import LANGCODES, Translator
 from loguru import logger as log
 from stela import settings
-from telebot import TeleBot
 
 
 class TelegramService:
     def __init__(self, language: str = settings["project.default_language"]) -> None:
         self.token = settings["TELEGRAM_TOKEN"]
         self.url = settings["telegram.url"] + self.token
-        self.translator = Translator()
         self.language = language
         self.offset = 0
         self.running = True
         self.refresh_rate = 1
-
-
-    def __t(self, message: str) -> str:
-        return self.translator.translate(message, src="en", dest=self.language)
 
     def start(self):
         log.info("Starting telegram bot...")

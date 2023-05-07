@@ -26,12 +26,11 @@ readme = "README.md"
 packages = [{include = "wolfgear-bot"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 pandas = "^2.0.1"
-weasyprint = "^58.1"
 loguru = "^0.7.0"
-pytelegrambotapi = "^4.11.0"
-googletrans = "^3.0.0"
+stela = "^5.0.4"
+weasyprint = "^58.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.3.1"
