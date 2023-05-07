@@ -97,4 +97,4 @@ class TelegramService:
         elif option == "/exit" and self.__validate_admin(message):
             self.running = False
         elif option == "/help":
-            self.help(message, self.help)
+            self.send_message(message, self.help)
