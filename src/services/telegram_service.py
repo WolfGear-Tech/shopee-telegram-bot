@@ -15,6 +15,25 @@ class TelegramService:
         self.running = True
         self.refresh_rate = 1
 
+        self.welcome = (
+            "Hello {user_name} and welcome to our Telegram bot.\n\n"
+            "We provides ETL (Extract, Transform, Load) services for Shopee data!\n"
+            "We're thrilled that you've chosen to use our bot to help streamline your data processing needs.\n\n"
+            "Use the command /help to check all the options avaible.\n"
+            "Enjoy ;)"
+        )
+
+        self.help = (
+            "Here are the commands that you can use with our bot:\n\n"
+            "/start - Start the bot and receive a welcome message.\n"
+            "/help - View a list of available commands and their descriptions.\n"
+            "/register - Register to our exclusive service.\n"
+            "/transform - Transform data to your desired format.\n"
+            "/feedback - Send feedback to the bot developers.\n\n"
+            "If you have any further questions or need assistance, please don't hesitate to reach out to us."
+            "We're always here to help!"
+        )
+
     def start(self):
         log.info("Starting telegram bot...")
         self.__setup()
@@ -22,11 +41,6 @@ class TelegramService:
         while self.running:
             self.handle_messages()
             time.sleep(self.refresh_rate)
-
-    def __validate(self) -> bool:
-        response = requests.get(self.url + "/getMe")
-        content = json.loads(response.content)
-        return content["ok"]
 
     def __validate_admin(self, message):
         username = message["chat"]["username"]
@@ -39,33 +53,30 @@ class TelegramService:
     def configure_commands(self):
         data = {
             "commands": [
-                {"command": "help",
-                "description": "Show help options"},
-                {"command": "exit",
-                "description": "End bot execution"}
+                {"command": "start", "description": "Start the bot and receive a welcome message."},
+                {"command": "help", "description": "View a list of available commands and their descriptions."},
+                {"command": "register", "description": "Register to our exclusive service."},
+                {"command": "transform", "description": "Transform data to your desired format."},
+                {"command": "feedback", "description": "Send feedback to the bot developers."},
             ]
         }
-        requests.post(self.url + "/setMyCommands", data)
+        requests.post(self.url + "/setMyCommands", data, timeout=5)
 
-    def help(self, message: dict):
+    def send_message(self, message: dict, text: str):
         user_name = message["chat"]["first_name"]
         chat_id = message["chat"]["id"]
-        data = {
-            "chat_id": chat_id,
-            "text": f"Hello {user_name}, how can i help you today?\n"
-            "Will be a pleasure to ignore your needs, as your parents."
-        }
-        requests.post(self.url + "/sendMessage", data)
+        data = {"chat_id": chat_id, "text": text.format(user_name)}
+        requests.post(self.url + "/sendMessage", data, timeout=5)
 
     def get_last_offset(self):
-        response = requests.get(self.url + "/getUpdates", {"limit": 1})
+        response = requests.get(self.url + "/getUpdates", {"limit": 1}, timeout=5)
         content = json.loads(response.content)
         if content["result"]:
             last_update_id = content["result"][0]["update_id"]
             self.offset = last_update_id + 1
 
     def get_messages(self):
-        response = requests.get(self.url + "/getUpdates", {"offset": self.offset})
+        response = requests.get(self.url + "/getUpdates", {"offset": self.offset}, timeout=5)
         content = json.loads(response.content)
         return content["result"]
 
@@ -81,17 +92,9 @@ class TelegramService:
 
     def command_options(self, message):
         option = message["text"].split()[0]
-        if option == "/exit" and self.__validate_admin(message):
+        if option == "/start":
+            self.send_message(message, self.welcome)
+        elif option == "/exit" and self.__validate_admin(message):
             self.running = False
         elif option == "/help":
-            self.help(message)
-
-
-    def send_message(self, message: dict):
-        user_name = message["chat"]["first_name"]
-        chat_id = message["chat"]["id"]
-        data = {
-            "chat_id": chat_id,
-            "text": f"Welcome to WolfGear Bot, {user_name}"
-        }
-        requests.post(self.url + "/sendMessage", data)
+            self.help(message, self.help)
