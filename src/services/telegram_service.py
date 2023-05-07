@@ -16,7 +16,7 @@ class TelegramService:
         self.refresh_rate = 1
 
         self.welcome = (
-            "Hello {user_name} and welcome to our Telegram bot.\n\n"
+            "Hello and welcome to our Telegram bot.\n\n"
             "We provides ETL (Extract, Transform, Load) services for Shopee data!\n"
             "We're thrilled that you've chosen to use our bot to help streamline your data processing needs.\n\n"
             "Use the command /help to check all the options avaible.\n"
@@ -30,7 +30,7 @@ class TelegramService:
             "/register - Register to our exclusive service.\n"
             "/transform - Transform data to your desired format.\n"
             "/feedback - Send feedback to the bot developers.\n\n"
-            "If you have any further questions or need assistance, please don't hesitate to reach out to us."
+            "If you have any further questions or need assistance, please don't hesitate to reach out to us. "
             "We're always here to help!"
         )
 
@@ -92,8 +92,7 @@ class TelegramService:
     def command_options(self, message):
         option = message["text"].split()[0]
         if option == "/start":
-            user_name = message["chat"]["first_name"]
-            self.send_message(message, self.welcome.format(user_name))
+            self.send_message(message, self.welcome)
         elif option == "/exit" and self.__validate_admin(message):
             self.running = False
         elif option == "/help":
